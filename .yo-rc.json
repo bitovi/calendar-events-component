@@ -1,0 +1,9 @@
+{
+  "generator-donejs": {
+    "promptValues": {
+      "authorName": "bitovi",
+      "authorEmail": "contact@bitovi.com",
+      "authorUrl": "http://bitovi.com"
+    }
+  }
+}
