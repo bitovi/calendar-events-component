@@ -135,7 +135,7 @@ function setHtmlContent(container, query, value) {
 }
 function shorten(text){
 	if(text.length > 30) {
-		return text.slice(0,40)+"&mldr;"
+		return text.slice(0,40)+"&mldr;";
 	} else {
 		return text;
 	}
