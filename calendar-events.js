@@ -121,7 +121,7 @@ function eventDate(event) {
 }
 
 
-safeCustomElement("calendar-events", function(){
+module.exports = safeCustomElement("calendar-events", function(){
 
 }, {
 	get apiKey(){
