@@ -1,33 +1,58 @@
-# calendar-events
+## @bitovi/calendar-events
 
-[![Build Status](https://travis-ci.org/bitovi/calendar-events.svg?branch=master)](https://travis-ci.org/bitovi/calendar-events)
+The `@bitovi/calendar-events` package exports a `<calendar-events>`
+custom element that lists events loaded from a google calendar.
 
-custom element that shows a google calendar
-
-## Usage
-
-### ES6 use
-
-With StealJS, you can import this module directly in a template that is autorendered:
-
-```js
-import plugin from 'calendar-events';
-```
-
-### CommonJS use
-
-Use `require` to load `calendar-events` and everything else
-needed to create a template that uses `calendar-events`:
-
-```js
-var plugin = require("calendar-events");
-```
-
-### Standalone use
-
-Load the `global` version of the plugin:
+Use it like:
 
 ```html
-<script src='./node_modules/calendar-events/dist/global/calendar-events.js'></script>
+<calendar-events
+	api-key="AIzaSyBsNpdGbkTsqn1BCSPQrjO9OaMySjK5Sns"
+	calendar-id="jupiterjs.com_g27vck36nifbnqrgkctkoanqb4@group.calendar.google.com"
+	event-count="3"
+	show-recurring
+></calendar-events>
 ```
-# calendar-events
+
+## Attributes
+
+### api-key
+
+`required`
+
+Set this to a google api key.
+
+### calendar-id
+
+`required`
+
+The calendar whose events will be displayed.
+
+### event-count
+
+The total number of events to display. This defaults to `10`.
+
+### show-recurring
+
+If present, this will include recurring events.
+
+
+## HTML
+
+The html output looks like the following:
+
+```html
+<calendar-events>
+	<div class='calendar-events-event'>
+		<div class='header'>
+			<div class='event-title'><a></a></div>
+			<div class='event-group'></div>
+			<div class='event-date'></div>
+			<div class='event-location'></div>
+			<div class='event-body'></div>
+		</div>
+		<div class='event-footer'><a>View Event</a></div>
+	</div>
+	...
+</calendar-events>
+```
