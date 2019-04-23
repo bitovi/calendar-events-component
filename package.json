@@ -1,6 +1,6 @@
 {
   "name": "@bitovi/calendar-events",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "custom element that shows a google calendar",
   "homepage": "http://bitovi.com",
   "repository": {
