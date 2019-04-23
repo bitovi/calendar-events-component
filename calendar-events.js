@@ -120,6 +120,26 @@ function eventDate(event) {
 	}
 }
 
+function setTextContent(container, query, value) {
+	container.querySelectorAll(query).forEach(function(el){
+		el.textContent = value;
+	});
+}
+
+function defaultTemplate(){
+	var container = document.createElement("div");
+	container.innerHTML = "<div class='event-header'>"+
+		"<div class='event-summary'><a class='event-url event-title'></a></div>"+
+		"<div class='event-group'></div>"+
+		"<div class='event-date'></div>"+
+		"<div class='event-location'></div>"+
+		"<div class='event-body'></div>"+
+	"</div>"+
+	"<div class='event-footer'><a class='event-url'>View Event</a></div>";
+	var frag = document.createDocumentFragment();
+	frag.appendChild(container)
+	return frag;
+}
 
 module.exports = safeCustomElement("calendar-events", function(){
 
@@ -137,6 +157,8 @@ module.exports = safeCustomElement("calendar-events", function(){
 		return parseInt( this.getAttribute("event-count"), 10) || 10;
 	},
 	connectedCallback: function(){
+		var template = this.querySelector("template");
+		this.template = template ? template.content : defaultTemplate();
 		this.innerHTML = "<div class='calendar-events-pending'></div>";
 		var url = "https://www.googleapis.com/calendar/v3/calendars/"+
 			this.calendarId+"/events?key="+this.apiKey;
@@ -173,27 +195,17 @@ module.exports = safeCustomElement("calendar-events", function(){
 		var events = getEvents(getPastAndFutureEvents, this.eventCount);
 
 		var elements = events.map( function( event ) {
-			var container = document.createElement("div");
-			container.innerHTML = "<div class='event-header'>"+
-				"<div class='event-title'><a></a></div>"+
-				"<div class='event-group'></div>"+
-				"<div class='event-date'></div>"+
-				"<div class='event-location'></div>"+
-				"<div class='event-body'></div>"+
-			"</div>"+
-			"<div class='event-footer'><a>View Event</a></div>";
-			container.classList.add("calendar-events-event");
+			var container = this.template.cloneNode(true);
+			container.firstElementChild.classList.add("calendar-events-event");
 
-			var summaryA = container.querySelector(".event-title a");
-			var footerA = container.querySelector(".event-footer a");
-
-			summaryA.textContent = event.summary;
-			summaryA.href = footerA.href = eventUrl(event);
-
-			container.querySelector(".event-group").textContent = eventGroup(event);
-			container.querySelector(".event-date").textContent = eventDate(event);
-			container.querySelector(".event-location").textContent = event.location;
-			container.querySelector(".event-body").textContent = (event.description || '').trim();
+			container.querySelectorAll("a.event-url").forEach(function(a){
+				a.href = eventUrl(event);
+			})
+			setTextContent(container, ".event-title",  event.summary);
+			setTextContent(container, ".event-group",  eventGroup(event));
+			setTextContent(container, ".event-date",  eventDate(event) );
+			setTextContent(container, ".event-location",  event.location );
+			setTextContent(container, ".event-body",  (event.description || '').trim() );
 
 			return container;
 		}.bind(this) );

@@ -39,20 +39,31 @@ If present, this will include recurring events.
 
 ## HTML
 
-The html output looks like the following:
+The default html output looks like the following:
 
 ```html
 <calendar-events>
-	<div class='calendar-events-event'>
-		<div class='header'>
-			<div class='event-title'><a></a></div>
-			<div class='event-group'></div>
-			<div class='event-date'></div>
-			<div class='event-location'></div>
-			<div class='event-body'></div>
-		</div>
-		<div class='event-footer'><a>View Event</a></div>
+	<div class='event-header'>
+		<div class='event-summary'><a class='event-url event-title'></a></div>
+		<div class='event-group'></div>
+		<div class='event-date'></div>
+		<div class='event-location'></div>
+		<div class='event-body'></div>
 	</div>
+	<div class='event-footer'><a class='event-url'>View Event</a></div>
 	...
+</calendar-events>
+```
+
+You can customize it by adding it to a `<template>` within your page:
+
+```html
+<calendar-events>
+	<template>
+		<a class='event-url'>
+			<h1 class='event-title'></h1>
+			<p class='event-body'></p>
+		</a>
+	</template>
 </calendar-events>
 ```
