@@ -43,7 +43,7 @@ function getSortedEvents(eventsData){
 		var dateStr = event.start.dateTime || event.start.date;
 		var date = new Date(dateStr);
 		clone.start.time = date;
-		return clone
+		return clone;
 	}).sort(function(eventA, eventB){
 		return eventA.start.time - eventB.start.time;
 	});
@@ -61,17 +61,17 @@ function getPastAndFutureEvents(sortedEvents) {
 		return {
 			future: sortedEvents.slice(index),
 			past: sortedEvents.slice(0,index)
-		}
+		};
 	} else {
 		return {
 			future: [],
 			past: sortedEvents
-		}
+		};
 	}
 }
 function filterRecurringEvents(sortedEvents){
 	return sortedEvents.filter(function(event){
-		return !event.recurringEventId && event.status !== "cancelled"
+		return !event.recurringEventId && event.status !== "cancelled";
 	});
 }
 
@@ -108,13 +108,14 @@ function eventGroup(event){
 function eventDate(event) {
 	var startDate = event.start.date;
 	var startDateTime = event.start.dateTime;
+	var date;
 	if (startDateTime) {
-		var date = new Date(startDateTime);
+		date = new Date(startDateTime);
 		return date.toLocaleString(undefined, {month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit"});
 
 		//return datetime.format('MMM Do, YYYY — h:mma');
 	} else if (startDate) {
-		var date = new Date(startDate);
+		date = new Date(startDate);
 		return date.toLocaleString(undefined, {month: "short", day: "numeric", year: "numeric"});
 	}
 }
@@ -136,7 +137,7 @@ safeCustomElement("calendar-events", function(){
 		return parseInt( this.getAttribute("event-count"), 10) || 10;
 	},
 	connectedCallback: function(){
-		this.innerHTML = "<div class='calendar-events-pending'></div>"
+		this.innerHTML = "<div class='calendar-events-pending'></div>";
 		var url = "https://www.googleapis.com/calendar/v3/calendars/"+
 			this.calendarId+"/events?key="+this.apiKey;
 		fetch( url ).then(function(response){
@@ -157,7 +158,7 @@ safeCustomElement("calendar-events", function(){
 				"<p>Sorry, events can't load right now.</p>"+
 				"</div>";
 			throw err;
-		}.bind(this))
+		}.bind(this));
 
 	},
 	showEvents: function(getPastAndFutureEvents){
