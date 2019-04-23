@@ -137,7 +137,7 @@ function defaultTemplate(){
 	"</div>"+
 	"<div class='event-footer'><a class='event-url'>View Event</a></div>";
 	var frag = document.createDocumentFragment();
-	frag.appendChild(container)
+	frag.appendChild(container);
 	return frag;
 }
 
@@ -200,7 +200,7 @@ module.exports = safeCustomElement("calendar-events", function(){
 
 			container.querySelectorAll("a.event-url").forEach(function(a){
 				a.href = eventUrl(event);
-			})
+			});
 			setTextContent(container, ".event-title",  event.summary);
 			setTextContent(container, ".event-group",  eventGroup(event));
 			setTextContent(container, ".event-date",  eventDate(event) );
