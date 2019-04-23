@@ -174,7 +174,7 @@ module.exports = safeCustomElement("calendar-events", function(){
 
 		var elements = events.map( function( event ) {
 			var container = document.createElement("div");
-			container.innerHTML = "<div class='header'>"+
+			container.innerHTML = "<div class='event-header'>"+
 				"<div class='event-title'><a></a></div>"+
 				"<div class='event-group'></div>"+
 				"<div class='event-date'></div>"+
