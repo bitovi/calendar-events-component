@@ -88,22 +88,25 @@ function getEvents(pastAndFutureEvents, count) {
 	}
 }
 
-function eventLastDescriptionLineSplit(event) {
+function eventDescriptionHTMLGroupAndUrl(event) {
 	var description = (event.description || '').trim();
-	var lines = description.split(/\r?\n/);
-	var lastLine = (lines.length) ? lines[lines.length - 1] : '';
-	return lastLine.split(': ', 2);
+	var lines, last;
+	var isHTML = description.includes("<br>");
+	if( isHTML ) {
+		lines = description.split(/<br\/?>/);
+	} else {
+		lines = description.split(/\r?\n/);
+	}
+	last = lines.pop() || '';
+	var parts = last.split(': ', 2);
+
+	return {
+		descriptionHTML : !isHTML ? linkify( lines.join("<br>") ) : lines.join("<br>"),
+		group: parts[0],
+		url: parts[1]
+	};
 }
 
-function eventUrl(event){
-	var lastLineSplit = eventLastDescriptionLineSplit(event);
-	return (lastLineSplit[1] || '').trim();
-}
-
-function eventGroup(event){
-	var lastLineSplit = eventLastDescriptionLineSplit(event);
-	return (lastLineSplit[0] || '').trim();
-}
 
 function eventDate(event) {
 	var startDate = event.start.date;
@@ -125,6 +128,39 @@ function setTextContent(container, query, value) {
 		el.textContent = value;
 	});
 }
+function setHtmlContent(container, query, value) {
+	container.querySelectorAll(query).forEach(function(el){
+		el.innerHTML = value;
+	});
+}
+function shorten(text){
+	if(text.length > 30) {
+		return text.slice(0,40)+"&mldr;"
+	} else {
+		return text;
+	}
+}
+
+// from https://stackoverflow.com/questions/37684/how-to-replace-plain-urls-with-links
+function linkify(inputText) {
+    var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+    //URLs starting with http://, https://, or ftp://
+    replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+    replacedText = inputText.replace(replacePattern1, function(all){
+		return '<a href="'+all+'" target="_blank">'+shorten(all)+'</a>';
+	});
+
+    //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+    replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+    //Change email addresses to mailto:: links.
+    replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+    replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+    return replacedText;
+}
 
 function defaultTemplate(){
 	var container = document.createElement("div");
@@ -140,6 +176,8 @@ function defaultTemplate(){
 	frag.appendChild(container);
 	return frag;
 }
+
+
 
 module.exports = safeCustomElement("calendar-events", function(){
 
@@ -198,14 +236,18 @@ module.exports = safeCustomElement("calendar-events", function(){
 			var container = this.template.cloneNode(true);
 			container.firstElementChild.classList.add("calendar-events-event");
 
+
+			var metaData = eventDescriptionHTMLGroupAndUrl(event);
+
 			container.querySelectorAll("a.event-url").forEach(function(a){
-				a.href = eventUrl(event);
+				a.href = metaData.url;
 			});
 			setTextContent(container, ".event-title",  event.summary);
-			setTextContent(container, ".event-group",  eventGroup(event));
+			setTextContent(container, ".event-group",  metaData.group);
 			setTextContent(container, ".event-date",  eventDate(event) );
 			setTextContent(container, ".event-location",  event.location );
-			setTextContent(container, ".event-body",  (event.description || '').trim() );
+
+			setHtmlContent(container, ".event-body",  metaData.descriptionHTML );
 
 			return container;
 		}.bind(this) );
