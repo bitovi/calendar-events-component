@@ -1,6 +1,6 @@
 {
   "name": "@bitovi/calendar-events",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "custom element that shows a google calendar",
   "homepage": "http://bitovi.com",
   "repository": {
@@ -31,12 +31,8 @@
     "donejs",
     "donejs-plugin"
   ],
-  "steal": {
-
-  },
-  "dependencies": {
-
-  },
+  "steal": {},
+  "dependencies": {},
   "devDependencies": {
     "jshint": "^2.9.1",
     "steal": "^2.1.6",
