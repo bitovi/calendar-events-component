@@ -111,7 +111,7 @@ function eventDescriptionHTMLGroupAndUrl(event) {
 			url = parts[1];
 		}
 	} else {
-		url = parts[1]
+		url = parts[1];
 	}
 
 	return {
