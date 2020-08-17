@@ -38,7 +38,9 @@ function todayDate(){
 }
 
 function getSortedEvents(eventsData){
-	return eventsData.items.map(function(event){
+	return eventsData.items.filter(function(event) {
+		return event.status !== 'cancelled';
+	}).map(function(event){
 		var clone = Object.assign({}, event);
 		var dateStr = event.start.dateTime || event.start.date;
 		var date = new Date(dateStr);
