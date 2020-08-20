@@ -118,7 +118,7 @@ function eventDescriptionHTMLGroupAndUrl(event) {
 
 	return {
 		descriptionHTML : !isHTML ? linkify( lines.join("<br>") ) : lines.join("<br>"),
-		group: parts[0],
+		group: (isHTML && parts[0].startsWith('<a')) ? '' : parts[0],
 		url: url
 	};
 }
