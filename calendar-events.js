@@ -100,25 +100,12 @@ function eventDescriptionHTMLGroupAndUrl(event) {
 		lines = description.split(/\r?\n/);
 	}
 	last = lines.pop() || '';
-	var parts = last.split(': ', 2),
-		url;
+	var url = event.htmlLink;
 
-	if(isHTML) {
-		var div = document.createElement("div");
-		div.innerHTML = parts[1];
-
-		if(div.firstElementChild) {
-			url = div.firstElementChild.href;
-		} else {
-			url = parts[1];
-		}
-	} else {
-		url = parts[1];
-	}
 
 	return {
-		descriptionHTML : !isHTML ? linkify( lines.join("<br>") ) : lines.join("<br>"),
-		group: (isHTML && parts[0].startsWith('<a')) ? '' : parts[0],
+		descriptionHTML : description,
+		group: event.organizer.displayName,
 		url: url
 	};
 }
@@ -261,7 +248,7 @@ module.exports = safeCustomElement("calendar-events", function(){
 			setTextContent(container, ".event-title",  event.summary);
 			setTextContent(container, ".event-group",  metaData.group);
 			setTextContent(container, ".event-date",  eventDate(event) );
-			setHtmlContent(container, ".event-location",  linkify(event.location || "") );
+			setHtmlContent(container, ".event-location",  linkify(event.location || event.hangoutLink) );
 
 			setHtmlContent(container, ".event-body",  metaData.descriptionHTML );
 
