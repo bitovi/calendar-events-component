@@ -98,7 +98,7 @@ Within the event template (`.calendar-events-event`), the following classes will
 
 `.event-location` - The location field or hangout link, urls become links. (`event.location || event.hangoutLink`)
 
-`.event-body` - The plain text of the description field. HTML descriptions not yet supported. (`event.description`)
+`.event-body` - The content of the description field. Linebreaks in plaintext converted into br tags. (`event.description`)
 
 `a.event-url` - Updates the href (must be an `a` tag in your template) as a link to the event itself. (`event.htmlLink`)
 
