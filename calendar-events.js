@@ -69,15 +69,18 @@ function filterRecurringEvents(sortedEvents) {
 }
 
 function getEvents(pastAndFutureEvents, count) {
-  var futureEvents = pastAndFutureEvents.future.length,
-    pastEventsNeeded = count - futureEvents,
+  // older event start dates are at the start of both arrays
+  var futureEvents = pastAndFutureEvents.future,
+    pastEventsNeeded = count - futureEvents.length,
     past = pastAndFutureEvents.past;
 
-  if (pastEventsNeeded > 0) {
+  if (pastEventsNeeded >= past.length) {
+    return past.concat(futureEvents);
+  } else if (pastEventsNeeded > 0) {
     return past.slice(past.length - pastEventsNeeded)
-      .concat(pastAndFutureEvents.future);
+      .concat(futureEvents);
   } else {
-    return pastAndFutureEvents.future.slice(0, count);
+    return futureEvents.slice(0, count);
   }
 }
 

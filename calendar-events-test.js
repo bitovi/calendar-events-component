@@ -442,9 +442,43 @@ QUnit.test('Component correctly uses custom event-date field and its variants', 
   assert.equal(el.querySelector('[data-options="day:2-digit"]').innerHTML, "04", "day:2-digit by itself works")
 })
 
+QUnit.test('Component correctly handles html descriptions', async assert => {
+  const onlyHTMLEvents = googleCalendarAPIResponse.items.filter(ev => (ev.description || '').indexOf("<") > -1)
+  globalThis.fetch = () => { return Promise.resolve({ json: () => ({ items: onlyHTMLEvents }) }) }
+
+  let tagCount = 0
+  const descriptions = onlyHTMLEvents.map(x => {
+    tagCount += [...x.description.matchAll(/<\w/g)].length
+    return x.description
+  })
+  console.log(descriptions)
+
+  fixture.innerHTML = `
+    <calendar-events
+      api-key="AIzaSyBsNpdGbkTsqn1BCSPQrjO9OaMySjK5Sns"
+      calendar-id="jupiterjs.com_g27vck36nifbnqrgkctkoanqb4@group.calendar.google.com"
+      event-count="30"
+      show-recurring
+    >
+      <template>
+        <div class="calendar-events-event event-body"></div>
+      </template>
+    </calendar-events>
+  `
+  const el = select("calendar-events")
+
+  await el.promise
+
+  const eventEls = selectAll(".calendar-events-event")
+  assert.equal(descriptions.length, 23, "expected number (23) of html descriptions in the data")
+  assert.equal(eventEls.length, descriptions.length, `${descriptions.length} events printed with html embeded`)
+  assert.equal(tagCount, 129, "expected number (129) of embeded html tags in the data")
+  assert.equal(selectAll(".calendar-events-event *").length, tagCount, `all ${tagCount} embeded html elements rendered`)
+  // test link hrefs aren't mangled
+})
 
 /*
   .event-location // needs tests, does link substitution stuff, had a bug
-  .event-body // currently just prints as text but google has escaped html (search for 'html-blob')
+  .event-body // need to test plaintext too
   a.event-url
 */
