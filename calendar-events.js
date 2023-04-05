@@ -143,7 +143,7 @@ function eventDate(eventStart, localesStr, optionsStr) {
   optionsStr && optionsStr.replace(
     /\b([a-z0-9]+)(?::([a-z0-9-_/]+))?(\s|$)/gi,
     (_, key, val) => options[key] = val || defaultDateValuesWhenOnlyKeySpecified[key]
-  ); // jshint ignore:line
+  );
 
   if (options.hour12) {
     options.hour12 = options.hour12 !== "false"; // to bool if set, favor true
@@ -178,6 +178,43 @@ function setHtmlContent(container, query, value) {
   selectAllIncludeSelf(container, query).forEach(function (el) {
     el.innerHTML = value;
   });
+}
+function dataFindThenCutOrCopy(container, dataFindRegEx) {
+  selectAllIncludeSelf(container, "a.event-body, .event-body a").forEach(function (link) {
+    const found = link.textContent.match(dataFindRegEx);
+
+    if (found) {
+      // Template links populated by data-find
+      selectAllIncludeSelf(container, `a[data-find~="${found[0]}" i]:not([data-found])`).forEach(function (finder) {
+        finder.href = link.href;
+        finder.textContent = finder.textContent || link.textContent.trim(); // copy link's text if template doesn't have text
+        if (finder.hasAttribute("data-cut")) { // default behavior is to keep the link. data-cut flags it for removal
+          link.remove(); // remove source link from event-body since it was moved to finder element
+        }
+        finder.setAttribute("data-found", found[0]);
+      });
+      // Template images populated by data-find
+      selectAllIncludeSelf(container, `img[data-find~="${found[0]}" i]:not([data-found])`).forEach(function (finder) {
+        finder.src = link.href; // copy link's href as the img.src
+        finder.alt = link.textContent.trim(); // copy link's text as image's alt
+        if (finder.hasAttribute("data-cut")) { // default behavior is to keep the link. data-cut flags it for removal
+          link.remove(); // remove source link from event-body since it was moved to finder element
+        }
+        finder.setAttribute("data-found", found[0]);
+      });
+    }
+  });
+  // removing data-found info, was used above for avoiding problems from duplicate description sources
+  selectAllIncludeSelf(container, `[data-find][data-found]`).forEach(function (finder) {
+    finder.removeAttribute("data-found");
+  });
+  // any data-find elements who wound up without a match are removed because they're invalid
+  // TODO: put data-not-found on root element populated with data-find keys that weren't found to help with styling
+  selectAllIncludeSelf(container, "a:not([href]), a[href=''], img:not([src]), img[src='']").forEach(
+    function (lostNotFound) {
+      lostNotFound.remove();
+    }
+  );
 }
 function shorten(text) {
   if (text.length > 30) {
@@ -299,6 +336,12 @@ module.exports = safeCustomElement("calendar-events", function () {
 
     const eventTemplate = this.templates.event;
 
+    // Create regex to search link text for terms specified within the event template
+    const findTerms = selectAllIncludeSelf(eventTemplate, "[data-find]").map(
+      finder => finder.getAttribute("data-find").trim().replace(/\s+/g, "|")
+    ).join("|");
+    const dataFindRegEx = findTerms && new RegExp(`\\b(?:${findTerms})\\b`, "i");
+
     const elements = events.map((event) => {
       var container = eventTemplate.cloneNode(true);
 
@@ -315,9 +358,11 @@ module.exports = safeCustomElement("calendar-events", function () {
       setDateContent(container, ".event-date", event.start);
 
       const locatable = event.location || event.hangoutLink;
-      locatable && setHtmlContent(container, ".event-location", linkify(locatable)); // jshint ignore:line
+      locatable && setHtmlContent(container, ".event-location", linkify(locatable));
 
       setHtmlContent(container, ".event-body", metaData.descriptionHTML);
+
+      findTerms && dataFindThenCutOrCopy(container, dataFindRegEx); // requires .event-body to be populated first
 
       return container;
     });

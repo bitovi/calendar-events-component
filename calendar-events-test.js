@@ -347,8 +347,44 @@ QUnit.test('event-all-day class works', async assert => {
   assert.equal(selectAll(".event-all-day[data-all-day=false]").length, 91, "data-all-day appeneded with correct value")
 })
 
+const eventSkel = {
+  kind: "calendar#event",
+  etag: '"3031026261682000"',
+  id: "2mag0ad2crcv9rmujah0hvek6q",
+  status: "confirmed",
+  htmlLink: "https://www.google.com/calendar/event?eid=Mm1hZzBhZDJjcmN2OXJtdWphaDBodmVrNnEganVwaXRlcmpzLmNvbV9nMjd2Y2szNm5pZmJucXJna2N0a29hbnFiNEBn",
+  created: "2021-03-05T00:54:10.000Z",
+  updated: "2021-03-05T00:54:53.841Z",
+  summary: "Love, try to love.",
+  creator: { email: "in@bit.testdata", displayName: "Jane Ori" },
+  organizer: { email: "b4@gro.testdata", self: true, displayName: "title goes here" },
+  start: { date: new Date().toISOString() },
+  end: { date: new Date().toISOString() },
+  description: "https://www.youtube.com/watch?v=cGgVoqr78gk",
+  transparency: "transparent",
+  iCalUID: "6q@goo.testdata",
+  sequence: 0,
+  eventType: "default"
+}
+const createEvent = (title, description, start) => {
+  return Object.assign({}, eventSkel, {
+    organizer: { email: "b4@gro.testdata", self: true, displayName: title },
+    description,
+    start: start || eventSkel.start
+  })
+}
+
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
 QUnit.test('Component correctly uses custom event-date field and its variants', async assert => {
+  globalThis.fetch = () => Promise.resolve({
+    json: () => ({
+      items: [
+        createEvent("test event-date", `Test Description 1`, { dateTime: new Date("Apr 7, 2023, 6:30 PM").toISOString() }),
+        createEvent("test event-date", `Test Description 2`, { date: new Date("Tue, Apr 18, 2023").toISOString() })
+      ]
+    })
+  })
+
   fixture.innerHTML = `
     <calendar-events
       api-key="AIzaSyBsNpdGbkTsqn1BCSPQrjO9OaMySjK5Sns"
@@ -408,14 +444,14 @@ QUnit.test('Component correctly uses custom event-date field and its variants', 
     true,
     `date information (${dateEls[1].innerHTML}) correctly parsed & inserted`
   )
-  assert.equal(el.querySelector('[data-options="weekday"]').innerHTML, "Tue", "weekday by itself works")
+  assert.equal(el.querySelector('[data-options="weekday"]').innerHTML, "Fri", "weekday by itself works")
   assert.equal(el.querySelector('[data-options="year"]').innerHTML, "2023", "year by itself works")
   assert.equal(el.querySelector('[data-options="month"]').innerHTML, "Apr", "month by itself works")
-  assert.equal(el.querySelector('[data-options="day"]').innerHTML, "4", "day by itself works")
-  assert.equal(el.querySelector('[data-options="hour"]').innerHTML, "12 PM", "hour by itself works by auto appending AM/PM")
-  assert.equal(el.querySelector('[data-options="hour hourCycle:h24"]').innerHTML, "12", "hour hourCycle:h24 works")
-  assert.equal(el.querySelector('[data-options="hour hour12:false"]').innerHTML, "12", "hour hour12:false works")
-  assert.equal(el.querySelector('[data-options="hour minute"]').innerHTML, "12:00 PM", "hour minute works")
+  assert.equal(el.querySelector('[data-options="day"]').innerHTML, "7", "day by itself works")
+  assert.equal(el.querySelector('[data-options="hour"]').innerHTML, "6 PM", "hour by itself works by auto appending AM/PM")
+  assert.equal(el.querySelector('[data-options="hour hourCycle:h24"]').innerHTML, "18", "hour hourCycle:h24 works")
+  assert.equal(el.querySelector('[data-options="hour hour12:false"]').innerHTML, "18", "hour hour12:false works")
+  assert.equal(el.querySelector('[data-options="hour minute"]').innerHTML, "6:30 PM", "hour minute works")
 
   // None of these work well when used alone:
   // const dayPeriod = dateEls[10].innerHTML
@@ -428,9 +464,9 @@ QUnit.test('Component correctly uses custom event-date field and its variants', 
   // we might want to consider hacking in our own homebrew variants like:
   // hour without dayPeriod auto attached, dayPaeriod (AM/PM) by itself, minute:2-digit by itself, timeZoneName alone
 
-  assert.equal(el.querySelector('[data-options="weekday:long"]').innerHTML, "Tuesday", "weekday:long by itself works")
-  assert.equal(el.querySelector('[data-options="weekday:short"]').innerHTML, "Tue", "weekday:short by itself works")
-  assert.equal(el.querySelector('[data-options="weekday:narrow"]').innerHTML, "T", "weekday:narrow by itself works")
+  assert.equal(el.querySelector('[data-options="weekday:long"]').innerHTML, "Friday", "weekday:long by itself works")
+  assert.equal(el.querySelector('[data-options="weekday:short"]').innerHTML, "Fri", "weekday:short by itself works")
+  assert.equal(el.querySelector('[data-options="weekday:narrow"]').innerHTML, "F", "weekday:narrow by itself works")
   assert.equal(el.querySelector('[data-options="year:numeric"]').innerHTML, "2023", "year:numeric by itself works")
   assert.equal(el.querySelector('[data-options="year:2-digit"]').innerHTML, "23", "year:2-digit by itself works")
   assert.equal(el.querySelector('[data-options="month:numeric"]').innerHTML, "4", "month:numeric by itself works")
@@ -438,8 +474,8 @@ QUnit.test('Component correctly uses custom event-date field and its variants', 
   assert.equal(el.querySelector('[data-options="month:long"]').innerHTML, "April", "month:long by itself works")
   assert.equal(el.querySelector('[data-options="month:short"]').innerHTML, "Apr", "month:short by itself works")
   assert.equal(el.querySelector('[data-options="month:narrow"]').innerHTML, "A", "month:narrow by itself works")
-  assert.equal(el.querySelector('[data-options="day:numeric"]').innerHTML, "4", "day:numeric by itself works")
-  assert.equal(el.querySelector('[data-options="day:2-digit"]').innerHTML, "04", "day:2-digit by itself works")
+  assert.equal(el.querySelector('[data-options="day:numeric"]').innerHTML, "7", "day:numeric by itself works")
+  assert.equal(el.querySelector('[data-options="day:2-digit"]').innerHTML, "07", "day:2-digit by itself works")
 })
 
 QUnit.test('Component correctly handles html descriptions', async assert => {
@@ -451,7 +487,7 @@ QUnit.test('Component correctly handles html descriptions', async assert => {
     tagCount += [...x.description.matchAll(/<\w/g)].length
     return x.description
   })
-  console.log(descriptions)
+  // console.log(descriptions)
 
   fixture.innerHTML = `
     <calendar-events
@@ -474,11 +510,100 @@ QUnit.test('Component correctly handles html descriptions', async assert => {
   assert.equal(eventEls.length, descriptions.length, `${descriptions.length} events printed with html embeded`)
   assert.equal(tagCount, 129, "expected number (129) of embeded html tags in the data")
   assert.equal(selectAll(".calendar-events-event *").length, tagCount, `all ${tagCount} embeded html elements rendered`)
-  // test link hrefs aren't mangled
+})
+
+QUnit.test('Component correctly handles data-find', async assert => {
+  globalThis.fetch = () => Promise.resolve({
+    json: () => ({
+      items: [
+        createEvent("test data-find", `
+          Test Description 1\u003cbr\u003e
+          \u003ca href="http://bitovi.com/join-our-event?invitedBy=Heather"\u003eRegister for the event here.\u003c/a\u003e
+          \u003ca href="http://bitovi.com/services/augmented-ui-consulting?leadGenTrackingFromEventId=222077"\u003e
+            Join the queue for augmented-ui consulting!
+          \u003c/a\u003e
+          \u003ca href="https://i.imgur.com/i7eZZ5X.jpg"\u003eAndrew's meme of the event.\u003c/a\u003e
+          \u003ca href="https://i.imgur.com/i7eZZ5X.jpg"\u003eThis is-found.\u003c/a\u003e
+          \u003ca href="about:404"\u003eBAD register LINK\u003c/a\u003e
+        `),
+        createEvent("test data-find", `
+          Test Description 2
+        `)
+      ]
+    })
+  })
+
+  fixture.innerHTML = `
+    <calendar-events
+      api-key="AIzaSyBsNpdGbkTsqn1BCSPQrjO9OaMySjK5Sns"
+      calendar-id="jupiterjs.com_g27vck36nifbnqrgkctkoanqb4@group.calendar.google.com"
+      event-count="30"
+      show-recurring
+    >
+      <template>
+        <div class="calendar-events-event">
+          <h1 class="event-title"></h1>
+
+          <a href="http://bitovi.com/" data-find="Register" data-cut></a>
+
+          <img data-find="meme" data-cut>
+
+          <div class="event-body"></div>
+
+          <a data-find="augmented-ui">High Tech, Low Effort. The future is augmented.</a>
+          <a data-find="register" data-cut>Only empty tags get textContent updated, so this text won't change.</a>
+          <a data-find="not-found is-found" data-cut>multiple terms work</a>
+
+          <img data-find="not-found">
+          <img src="#" data-find="not-found" alt="data-find els with default values stick around when not found">
+          <a data-find="not-found">like tears in the rain</a>
+          <a class="event-url" data-find="not-found">Still Here, saved by event url</a>
+          <a class="event-url" data-find="meme">Found url overrides event url</a>
+        </div>
+      </template>
+    </calendar-events>
+  `
+  const el = select("calendar-events")
+
+  await el.promise
+
+  const eventEls = selectAll(".calendar-events-event")
+  const registerURL = "http://bitovi.com/join-our-event?invitedBy=Heather"
+  const registerFound = eventEls[0].querySelectorAll("[data-find='register' i]")
+
+  assert.equal(registerFound.length, 2, "find register links still present")
+  assert.equal(registerFound[0].href, registerURL, "register was found and the href was copied correctly")
+  assert.equal(registerFound[0].textContent, "Register for the event here.", "register textContent was copied correctly")
+  assert.equal(registerFound[1].href, registerURL, "register was found and the href was copied correctly twice")
+  assert.equal(registerFound[1].textContent, "Only empty tags get textContent updated, so this text won't change.", "textContent was correctly NOT copied")
+  assert.equal(eventEls[0].querySelector(".event-body a[href='" + registerURL + "']"), null, "register link removed from event-body")
+
+  const augURL = "http://bitovi.com/services/augmented-ui-consulting?leadGenTrackingFromEventId=222077"
+  const augFound = eventEls[0].querySelectorAll("[data-find='augmented-ui' i]")
+
+  assert.equal(augFound.length, 1, "find augmented-ui link still present")
+  assert.equal(augFound[0].href, augURL, "augmented-ui link was found and the href was copied correctly")
+  assert.equal(augFound[0].textContent, "High Tech, Low Effort. The future is augmented.", "augmented-ui link text correctly NOT updated")
+  assert.equal(eventEls[0].querySelectorAll(".event-body a[href='" + augURL + "']").length, 1, "augmented-ui link not removed from event-body because it was found by an element without data-cut")
+
+  const memeURL = "https://i.imgur.com/i7eZZ5X.jpg"
+  const memeFound = eventEls[0].querySelectorAll("[data-find='meme' i]")
+  assert.equal(memeFound[0].src, memeURL, "meme link was found and the src was updated correctly")
+  assert.equal(memeFound[0].alt, "Andrew's meme of the event.", "meme alt updated correctly")
+  assert.equal(memeFound[1].href, memeURL, "meme link was found and the href overrode event-url correctly")
+
+  const multiFind = eventEls[0].querySelectorAll("[data-find~='is-found' i]")
+  assert.equal(multiFind[0].href, memeURL, "multi data-find works")
+
+  assert.equal(eventEls[0].querySelectorAll("img[data-find='not-found' i]").length, 1, "only one data-find not-found img remains")
+  assert.equal(eventEls[0].querySelectorAll("a[data-find='not-found' i]").length, 1, "only one data-find not-found link remains")
+  assert.equal(eventEls[0].querySelector("a[data-find='not-found' i]").href, eventSkel.htmlLink, "data-find not-found link remains because it is also event-url")
+
+  assert.equal(eventEls[1].querySelectorAll("[data-find].event-url").length, 2, "only 2 of 4 remaining data-find els exist because they fell back to event-urls in the template; event supplied no matches")
+  assert.equal(eventEls[1].querySelectorAll("[data-find]").length, 4, "only 2 of 4 remaining data-find els exist because of default urls in the template; event supplied no matches")
 })
 
 /*
   .event-location // needs tests, does link substitution stuff, had a bug
   .event-body // need to test plaintext too
-  a.event-url
 */

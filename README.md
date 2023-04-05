@@ -192,3 +192,110 @@ Defaults are used for each option. To choose specifc variants of an option, add 
 <span class="event-date" data-options="day:numeric"></span>
 <span class="event-date" data-options="day:2-digit"></span>
 ```
+
+### data-find
+
+Copy text and urls from links in the event's description (.event-body) into other parts of the template.
+
+Given this event description:
+
+QA Con 2023 [register here](https://bitovi.com) if you wish.
+[Check out Andrew's meme of the day here](https://i.imgur.com/i7eZZ5X.jpg).
+
+the following event template
+
+```html
+<calendar-events>
+  <template>
+    <div class="calendar-events-event">
+      <a data-find="register"></a>
+      <img data-find="meme">
+
+      <p class='event-body'></p>
+      <a data-find="register">Register Here!</a>
+    </div>
+  </template>
+</calendar-events>
+```
+
+would produce:
+
+```html
+<div class="calendar-events-event">
+  <a data-find="register" href="https://bitovi.com">register here</a>
+  <img data-find="meme" src="https://i.imgur.com/i7eZZ5X.jpg" alt="Check out Andrew's meme of the day here">
+
+  <p class='event-body'>
+    QA Con 2023 <a href="https://bitovi.com">register here</a> if you wish.<br>
+    <a href="https://i.imgur.com/i7eZZ5X.jpg">Check out Andrew's meme of the day here</a>.
+  </p>
+  <a data-find="register" href="https://bitovi.com">Register Here!</a>
+</div>
+```
+
+if you want the copied data to be removed from the event-body, add `data-cut` flag to the `data-find` elements:
+
+```html
+<calendar-events>
+  <template>
+    <div class="calendar-events-event">
+      <a data-find="register" data-cut></a>
+      <img data-find="meme" data-cut>
+
+      <p class='event-body'></p>
+      <a data-find="register">Register Here!</a>
+    </div>
+  </template>
+</calendar-events>
+```
+
+becomes:
+
+```html
+<div class="calendar-events-event">
+  <a data-find="register" href="https://bitovi.com">register here</a>
+  <img data-find="meme" src="https://i.imgur.com/i7eZZ5X.jpg" alt="Check out Andrew's meme of the day here">
+
+  <p class='event-body'>
+    QA Con 2023  if you wish.<br>
+    .
+  </p>
+  <a data-find="register" href="https://bitovi.com">Register Here!</a>
+</div>
+```
+
+Coordinate with your marketing team on what keywords your templates can expect to find in the link text within your event descriptions.
+
+Using either above template, if the event description was instead:
+
+"2077 DLC marketing campaign starts in June!"
+
+the result would be:
+
+```html
+<div class="calendar-events-event">
+  <p class='event-body'>
+    2077 DLC marketing campaign starts in June!
+  </p>
+</div>
+```
+
+(any links without an `href` or images without a `src` are removed from the output)
+
+You can specify default `href` / `src` attributes in the template, `data-find` will override them if found, otherwise the defaults will remain in the final output.
+
+If a link in the template uses the `.event-url` class AND `data-find`, the event url will act as a default href value and only be overwritten if data-find matched. If not matched, the link will remain in the output with the event-url.
+
+Default textContent of a link will NOT be overwritten by `data-find`.
+
+Default alt text of an image WILL be overwritten by `data-find`.
+
+Finally, if your marketing team wants to be more flexible with their link text in the event descriptions, you can specify multiple find terms in your template with a space-separated-list of terms:
+
+```html
+...
+<a data-find="register registration"></a>
+...
+```
+
+There should not be more than one link in the event's description whose text contains a `data-find` query term (case insensitive), but if there is, only the first one is used.
