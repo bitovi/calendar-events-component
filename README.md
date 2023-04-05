@@ -168,7 +168,7 @@ data-options="hour minute second"
 data-options="hour minute"
 ```
 
-Defaults are used for each option. To choose specifc variants of an option, add a semicolon immediately after the option property and its desired value imediately after that.
+Defaults are used for each option. To choose specifc variants of an option, add a colon immediately after the option property and its desired value imediately after that.
 
 ```html
 <span class="event-date" data-options="month:short day:2-digit weekday:short"></span>
