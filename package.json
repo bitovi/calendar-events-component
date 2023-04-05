@@ -1,6 +1,6 @@
 {
   "name": "@bitovi/calendar-events-component",
-  "version": "0.1.0",
+  "version": "0.0.11",
   "description": "custom element that shows a google calendar",
   "homepage": "http://bitovi.com",
   "repository": {
@@ -15,7 +15,7 @@
   "scripts": {
     "preversion": "npm test && npm run build",
     "version": "git commit -am \"Update version number\" && git checkout -b release && git add -f dist/",
-    "postpublish": "git push --tags && git checkout master && git branch -D release && git push",
+    "postpublish": "git push --tags && git checkout main && git branch -D release && git push",
     "testee": "testee test.html --browsers firefox",
     "test": "npm run jshint && npm run testee",
     "jshint": "jshint ./*.js --config",
