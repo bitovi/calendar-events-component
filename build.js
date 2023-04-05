@@ -7,12 +7,14 @@ stealTools.export({
 	outputs: {
 		"+cjs": {},
 		"+amd": {},
-		"+global-js": {}
+		"+global-js": {
+			dest: __dirname + "/dist/global/calendar-events.js"
+		}
 	}
-}).catch(function(e){
-	
-	setTimeout(function(){
+}).catch(function (e) {
+
+	setTimeout(function () {
 		throw e;
-	},1);
-	
+	}, 1);
+
 });
