@@ -63,11 +63,13 @@ define(function (require, exports, module) {
         });
     }
     function getEvents(pastAndFutureEvents, count) {
-        var futureEvents = pastAndFutureEvents.future.length, pastEventsNeeded = count - futureEvents, past = pastAndFutureEvents.past;
-        if (pastEventsNeeded > 0) {
-            return past.slice(past.length - pastEventsNeeded).concat(pastAndFutureEvents.future);
+        var futureEvents = pastAndFutureEvents.future, pastEventsNeeded = count - futureEvents.length, past = pastAndFutureEvents.past;
+        if (pastEventsNeeded >= past.length) {
+            return past.concat(futureEvents);
+        } else if (pastEventsNeeded > 0) {
+            return past.slice(past.length - pastEventsNeeded).concat(futureEvents);
         } else {
-            return pastAndFutureEvents.future.slice(0, count);
+            return futureEvents.slice(0, count);
         }
     }
     function eventDescriptionHTMLGroupAndUrl(event) {
@@ -136,6 +138,35 @@ define(function (require, exports, module) {
     function setHtmlContent(container, query, value) {
         selectAllIncludeSelf(container, query).forEach(function (el) {
             el.innerHTML = value;
+        });
+    }
+    function dataFindThenCutOrCopy(container, dataFindRegEx) {
+        selectAllIncludeSelf(container, 'a.event-body, .event-body a').forEach(function (link) {
+            const found = link.textContent.match(dataFindRegEx);
+            if (found) {
+                selectAllIncludeSelf(container, `a[data-find~="${ found[0] }" i]:not([data-found])`).forEach(function (finder) {
+                    finder.href = link.href;
+                    finder.textContent = finder.textContent || link.textContent.trim();
+                    if (finder.hasAttribute('data-cut')) {
+                        link.remove();
+                    }
+                    finder.setAttribute('data-found', found[0]);
+                });
+                selectAllIncludeSelf(container, `img[data-find~="${ found[0] }" i]:not([data-found])`).forEach(function (finder) {
+                    finder.src = link.href;
+                    finder.alt = link.textContent.trim();
+                    if (finder.hasAttribute('data-cut')) {
+                        link.remove();
+                    }
+                    finder.setAttribute('data-found', found[0]);
+                });
+            }
+        });
+        selectAllIncludeSelf(container, `[data-find][data-found]`).forEach(function (finder) {
+            finder.removeAttribute('data-found');
+        });
+        selectAllIncludeSelf(container, 'a:not([href]), a[href=\'\'], img:not([src]), img[src=\'\']').forEach(function (lostNotFound) {
+            lostNotFound.remove();
         });
     }
     function shorten(text) {
@@ -232,6 +263,8 @@ define(function (require, exports, module) {
             }
             const events = getEvents(pastAndFutureEvents, this.eventCount);
             const eventTemplate = this.templates.event;
+            const findTerms = selectAllIncludeSelf(eventTemplate, '[data-find]').map(finder => finder.getAttribute('data-find').trim().replace(/\s+/g, '|')).join('|');
+            const dataFindRegEx = findTerms && new RegExp(`\\b(?:${ findTerms })\\b`, 'i');
             const elements = events.map(event => {
                 var container = eventTemplate.cloneNode(true);
                 var metaData = eventDescriptionHTMLGroupAndUrl(event);
@@ -247,6 +280,7 @@ define(function (require, exports, module) {
                 const locatable = event.location || event.hangoutLink;
                 locatable && setHtmlContent(container, '.event-location', linkify(locatable));
                 setHtmlContent(container, '.event-body', metaData.descriptionHTML);
+                findTerms && dataFindThenCutOrCopy(container, dataFindRegEx);
                 return container;
             });
             this.innerHTML = '';
