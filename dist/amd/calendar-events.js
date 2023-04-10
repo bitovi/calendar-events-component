@@ -1,4 +1,4 @@
-/*@bitovi/calendar-events-component@0.1.0#calendar-events*/
+/*@bitovi/calendar-events-component@0.2.0#calendar-events*/
 define(function (require, exports, module) {
     function safeCustomElement(tag, constructor, prototype) {
         prototype = prototype || constructor.prototype;
@@ -74,6 +74,10 @@ define(function (require, exports, module) {
     }
     function eventDescriptionHTMLGroupAndUrl(event) {
         var description = (event.description || '').trim();
+        const hasHTML = /<\/?(?:a|b|p|span|br)>/.test(description);
+        if (!hasHTML) {
+            description = linkify(description.replace(/\r?\n/g, '<br />'));
+        }
         var url = event.htmlLink;
         return {
             descriptionHTML: description,
@@ -138,6 +142,13 @@ define(function (require, exports, module) {
     function setHtmlContent(container, query, value) {
         selectAllIncludeSelf(container, query).forEach(function (el) {
             el.innerHTML = value;
+        });
+    }
+    function stripRedirectCapture(container) {
+        selectAllIncludeSelf(container, 'a[href^=\'https://www.google.com/url?\']').forEach(function (a) {
+            const captured = a.href.replace('https://www.google.com/url?', '').split('&').find(s => s.startsWith('q='));
+            const freed = captured ? decodeURIComponent(captured.replace('q=', '')) : a.href;
+            a.href = freed;
         });
     }
     function dataFindThenCutOrCopy(container, dataFindRegEx) {
@@ -280,6 +291,7 @@ define(function (require, exports, module) {
                 const locatable = event.location || event.hangoutLink;
                 locatable && setHtmlContent(container, '.event-location', linkify(locatable));
                 setHtmlContent(container, '.event-body', metaData.descriptionHTML);
+                stripRedirectCapture(container);
                 findTerms && dataFindThenCutOrCopy(container, dataFindRegEx);
                 return container;
             });
