@@ -86,14 +86,11 @@ function getEvents(pastAndFutureEvents, count) {
 
 function eventDescriptionHTMLGroupAndUrl(event) {
   var description = (event.description || '').trim();
-  // var lines, last;
-  // var isHTML = description.includes("<br>");
-  // if (isHTML) {
-  //   lines = description.split(/<br\/?>/);
-  // } else {
-  //   lines = description.split(/\r?\n/);
-  // }
-  // last = lines.pop() || '';
+  const hasHTML = /<\/?(?:a|b|p|span|br)>/.test(description);
+  if (!hasHTML) {
+    description = linkify(description.replace(/\r?\n/g, "<br />"));
+  }
+
   var url = event.htmlLink;
 
   return {
@@ -177,6 +174,14 @@ function setTextContent(container, query, value) {
 function setHtmlContent(container, query, value) {
   selectAllIncludeSelf(container, query).forEach(function (el) {
     el.innerHTML = value;
+  });
+}
+function stripRedirectCapture(container) {
+  selectAllIncludeSelf(container, "a[href^='https://www.google.com/url?']").forEach(function (a) {
+    const captured = a.href.replace("https://www.google.com/url?", "").split("&").find(s => s.startsWith("q="));
+    const freed = captured ? decodeURIComponent(captured.replace("q=", "")) : a.href;
+    a.href = freed;
+    // if a captured link contains "&" in its own url, this may need to change depending on how they encoded it
   });
 }
 function dataFindThenCutOrCopy(container, dataFindRegEx) {
@@ -361,6 +366,8 @@ module.exports = safeCustomElement("calendar-events", function () {
       locatable && setHtmlContent(container, ".event-location", linkify(locatable));
 
       setHtmlContent(container, ".event-body", metaData.descriptionHTML);
+
+      stripRedirectCapture(container);
 
       findTerms && dataFindThenCutOrCopy(container, dataFindRegEx); // requires .event-body to be populated first
 

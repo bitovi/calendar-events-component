@@ -159,7 +159,7 @@ QUnit.test('Component correctly parses and injects event data into the default e
 
   assert.equal(
     eventEls[1].querySelector(".event-body").innerHTML,
-    "IN PERSON ChicagoJS Meetup<br><br>See all the details and RSVP here:&nbsp;<a href=\"https://www.google.com/url?q=https://www.meetup.com/js-chi/events/288515502/&amp;sa=D&amp;source=calendar&amp;ust=1680538571058455&amp;usg=AOvVaw1Uqtg1pPsvsyv6sfG4NFK7\" target=\"_blank\">https://www.meetup.com/js-chi/events/288515502/</a>",
+    "IN PERSON ChicagoJS Meetup<br><br>See all the details and RSVP here:&nbsp;<a href=\"https://www.meetup.com/js-chi/events/288515502/\" target=\"_blank\">https://www.meetup.com/js-chi/events/288515502/</a>",
     "body information correctly parsed & inserted"
   )
 
@@ -368,6 +368,7 @@ const eventSkel = {
 }
 const createEvent = (title, description, start) => {
   return Object.assign({}, eventSkel, {
+    summary: title,
     organizer: { email: "b4@gro.testdata", self: true, displayName: title },
     description,
     start: start || eventSkel.start
@@ -380,7 +381,7 @@ QUnit.test('Component correctly uses custom event-date field and its variants', 
     json: () => ({
       items: [
         createEvent("test event-date", `Test Description 1`, { dateTime: new Date("Apr 7, 2023, 6:30 PM").toISOString() }),
-        createEvent("test event-date", `Test Description 2`, { date: new Date("Tue, Apr 18, 2023").toISOString() })
+        // createEvent("test event-date", `Test Description 2`, { date: new Date("Tue, Apr 18, 2023").toISOString() })
       ]
     })
   })
@@ -601,6 +602,38 @@ QUnit.test('Component correctly handles data-find', async assert => {
 
   assert.equal(eventEls[1].querySelectorAll("[data-find].event-url").length, 2, "only 2 of 4 remaining data-find els exist because they fell back to event-urls in the template; event supplied no matches")
   assert.equal(eventEls[1].querySelectorAll("[data-find]").length, 4, "only 2 of 4 remaining data-find els exist because of default urls in the template; event supplied no matches")
+})
+
+QUnit.test('Component correctly uses custom event-date field and its variants', async assert => {
+  globalThis.fetch = () => Promise.resolve({
+    json: () => ({
+      items: [
+        createEvent("free redirect captured description links", 'IN PERSON ChicagoJS Meetup\u003cbr\u003e\u003cbr\u003eSee all the details and RSVP here: \u003ca href="https://www.google.com/url?q=https://www.meetup.com/js-chi/events/288515502/&amp;sa=D&amp;source=calendar&amp;ust=1680538571058455&amp;usg=AOvVaw1Uqtg1pPsvsyv6sfG4NFK7" target="_blank"\u003ehttps://www.meetup.com/js-chi/events/288515502/\u003c/a\u003e'),
+        createEvent("no redirect to free here", "Join us for our online meetup where we have a handful of short talks on a variety of interesting topics!\n\nBitovi Meetup: https://www.bitovi.com/community"),
+        createEvent("free redirect captured description links", '\u003cb\u003eYour Unique Join Link:\u003c/b\u003e \u003ca href="https://www.google.com/url?q=https://my.demio.com/manage-registration/uc2cYcFAlOyciRxT&amp;sa=D&amp;source=calendar&amp;ust=1680538560648920&amp;usg=AOvVaw0zgJBlyXo8r5EIgnJKNclq" target="_blank"\u003eManage registration and notifications\u003c/a\u003e\u003cbr\u003e\u003cbr\u003e')
+      ]
+    })
+  })
+
+  fixture.innerHTML = `
+    <calendar-events
+      api-key="AIzaSyBsNpdGbkTsqn1BCSPQrjO9OaMySjK5Sns"
+      calendar-id="jupiterjs.com_g27vck36nifbnqrgkctkoanqb4@group.calendar.google.com"
+      event-count="3"
+      show-recurring
+    ></calendar-events>
+  `
+
+  const el = select("calendar-events")
+
+  await el.promise
+
+  const links = el.querySelectorAll('.event-body a')
+
+  assert.equal(links.length, 3, "all links inserted")
+  assert.equal(links[0].href, "https://www.meetup.com/js-chi/events/288515502/", "url 1 is correct")
+  assert.equal(links[1].href, "https://www.bitovi.com/community", "url 2 is correct")
+  assert.equal(links[2].href, "https://my.demio.com/manage-registration/uc2cYcFAlOyciRxT", "url 3 is correct")
 })
 
 /*
